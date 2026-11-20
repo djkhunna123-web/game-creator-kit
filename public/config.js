@@ -34,6 +34,11 @@ window.CONFIG = {
 // ตัวอย่าง: { hero: 'assets/hero.png', bg: 'assets/bg.jpg', music: 'assets/music.mp3' }
 window.ART = {};
 
+// เอฟเฟกต์พิกเซลสำเร็จรูป (สไปรต์ชีต PNG + JSON จาก pixelfx — ดู .claude/skills/game-creator/reference/pixelfx.md)
+// ใส่ชื่อไฟล์ไม่ต้องมีนามสกุล · เล่นในเกมด้วย this.playFx('pow', x, y)
+// ตัวอย่าง: { pow: 'assets/fx/cartoon-pow', coin: 'assets/fx/coin-spin' }
+window.FX = {};
+
 // ตารางคะแนนออนไลน์ (Supabase) — ว่างไว้ = เล่นแบบออฟไลน์ ไม่ถามชื่อ
 // ใส่ URL + Publishable key ของโปรเจกต์คุณ (Project Settings → API) และรัน supabase/leaderboard.sql ก่อน
 window.ONLINE = {

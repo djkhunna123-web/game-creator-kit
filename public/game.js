@@ -5,6 +5,7 @@
 // ตัวเลขทั้งหมดอยู่ใน config.js · ความมันส์ (ประกาย เสียง เด้ง) มาจาก juice.js
 const C = window.CONFIG;
 const ART = window.ART || {};
+const FX = window.FX || {};
 const BOT = new URLSearchParams(location.search).has('bot'); // ?bot=1 = ให้ AI เล่นเองไว้ทดสอบ
 
 class Game extends Phaser.Scene {
@@ -14,12 +15,43 @@ class Game extends Phaser.Scene {
     for (const [k, v] of Object.entries(ART)) {
       if (/\.(mp3|ogg|wav|m4a)$/i.test(v)) this.load.audio(k, v); else this.load.image(k, v);
     }
+    for (const [k, v] of Object.entries(FX)) this.load.atlas('fx-' + k, v + '.png', v + '.json');
+  }
+
+  // เอฟเฟกต์พิกเซล (pixelfx): สร้างแอนิเมชันจากสไปรต์ชีตทุกตัวใน FX · พิกเซลคม ไม่เบลอ
+  makeFxAnims() {
+    this.fxMeta = {};
+    for (const k of Object.keys(FX)) {
+      const key = 'fx-' + k;
+      if (!this.textures.exists(key) || this.anims.exists(key)) continue;
+      const tex = this.textures.get(key);
+      tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+      const names = tex.getFrameNames().sort((a, b) => +a.split(' ').pop() - +b.split(' ').pop());
+      const meta = (tex.customData && tex.customData.meta && tex.customData.meta.pixelfx) || {};
+      this.fxMeta[k] = meta;
+      this.anims.create({ key, frames: names.map((f) => ({ key, frame: f })), frameRate: meta.fps || 30, repeat: meta.loop ? -1 : 0 });
+    }
+  }
+
+  // เล่นเอฟเฟกต์ที่ x,y (หน่วยเกม 360×640) · { scale: 1, loop: false, depth: 6, flip: false }
+  // x,y = จุดยึดของเอฟเฟกต์ (pivot ที่ pixelfx กำหนด เช่น พื้นใต้กองไฟ) · scale ใช้เลขเต็ม 1/2/3 พิกเซลจะคมสุด
+  // เล่นครั้งเดียวแล้วหายเอง · loop: true = คืนตัวสไปรต์ไว้ให้ลบเอง (.destroy())
+  playFx(k, x, y, o = {}) {
+    const key = 'fx-' + k;
+    if (!this.anims.exists(key)) return null;
+    const m = (this.fxMeta && this.fxMeta[k]) || {}, fs = m.frameSize, pv = m.pivot;
+    const s = this.add.sprite(x, y, key).setScale(o.scale || 1).setDepth(o.depth ?? 6).setFlipX(!!o.flip);
+    if (fs && pv) s.setOrigin(pv[0] / fs[0], pv[1] / fs[1]);
+    s.play({ key, repeat: o.loop ? -1 : 0 });
+    if (!o.loop) s.once('animationcomplete', () => s.destroy());
+    return s;
   }
 
   create() {
     this.cameras.main.setOrigin(0, 0).setZoom(Z);
     Juice.setup(this);
     this.makeShapes();
+    this.makeFxAnims();
     this.best = Number(localStorage.getItem(this.storeKey('best')) || 0);
 
     // ฉากหลัง (มีภาพ bg ใน ART = ใช้ภาพ · ไม่มี = สีพื้น)

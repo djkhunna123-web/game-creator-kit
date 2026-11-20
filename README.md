@@ -3,17 +3,31 @@
 ชุดเริ่มทำเกมมือถือด้วย AI — บอกไอเดีย แล้วได้เกมที่ **เล่นสนุกจริง** เปิดบนมือถือผ่านลิงก์ + QR
 ใช้ได้ทั้ง **Claude Code** (skill `/game-creator`) และ **Codex** (อ่าน `AGENTS.md`)
 
-## เริ่มใน 3 ขั้น
+## ติดตั้งได้ 2 แบบ (เลือกแบบเดียวก็พอ)
+
+### แบบ A · ปลั๊กอิน Claude Code — ติดตั้งครั้งเดียว ใช้ได้ทุกโฟลเดอร์ (แนะนำ)
+เปิด Claude Code แล้วพิมพ์ทีละบรรทัด:
+```
+/plugin marketplace add djkhunna123-web/game-creator-kit
+/plugin install game-creator@zenityx
+```
+จากนั้นเปิด **โฟลเดอร์เปล่า** แล้วพิมพ์คำสั่งเกม (ด้านล่าง) — skill จะวางแม่แบบเกมให้เอง
+อัปเดตเป็นเวอร์ชันใหม่: `/plugin marketplace update zenityx`
+
+### แบบ B · ดาวน์โหลดทั้ง Kit (ใช้กับ Codex ได้ด้วย)
 ```bash
-git clone <ลิงก์ repo นี้> my-game
+git clone https://github.com/djkhunna123-web/game-creator-kit my-game
 cd my-game
 npm install
 ```
-จากนั้นเปิด Claude Code (หรือ Codex) ในโฟลเดอร์นี้ แล้วพิมพ์:
+เปิด Claude Code (หรือ Codex) ในโฟลเดอร์นี้
+
+### แล้วสั่งเกม
 ```
 /game-creator อยากได้เกมแนว [วิ่งไม่หยุด / ยิงยานอวกาศ / เก็บของหลบของ / สร้างตึก 8-bit / เปิดร้าน]
 [เล่าเกมของคุณ 1–2 ประโยค: ตัวละครเป็นใคร ทำอะไร หลบอะไร]
 ```
+(ติดตั้งแบบปลั๊กอิน คำสั่งจะขึ้นเป็น `/game-creator:game-creator` ด้วย — ใช้ได้ทั้งสองแบบ หรือเล่าไอเดียเกมเฉย ๆ ก็ได้)
 
 ## เมนูเกม 5 แนว (มีสูตรใน skill ทั้งหมด)
 | แนว | ตัวอย่างเกมจริง | คำสั่งตัวอย่าง |
@@ -34,16 +48,21 @@ npm install
 - 🤖 **AI เล่นทดสอบเอง** (`?bot=1`) แล้วปรับความยากให้
 - 🏆 **ตารางคะแนนออนไลน์** + กรรมการกลางกันโกง + หน้า Top 10 ขึ้นจอใหญ่ (ต่อ Supabase)
 - 🚀 **`npm run ship`** = ขึ้นเว็บ Cloudflare + QR ในคำสั่งเดียว
+- 💥 **เอฟเฟกต์พิกเซลฟรี 244 แบบ** (pixelfx · MIT): ระเบิด POW! เหรียญหมุน ฟันดาบ เลเวลอัป เปลี่ยนสีได้ — สั่ง "ใส่เอฟเฟกต์ระเบิดตอนได้คอมโบ" แล้ว skill จัดการให้ (`this.playFx()`)
 
 ## เล่นเกมตัวอย่างในแม่แบบ
 `npm run dev` → เปิด http://localhost:8100 (เกม "แตะลูกแก้ว") · ให้ AI เล่นเอง: http://localhost:8100/?bot=1
 
-## ติดตั้ง skill ให้ใช้ได้ทุกโปรเจกต์ (ไม่บังคับ)
-skill อยู่ใน `.claude/skills/game-creator/` ใช้ได้ทันทีในโฟลเดอร์นี้ · อยากใช้ทุกโฟลเดอร์: คัดลอกโฟลเดอร์ `game-creator` ไปที่ `~/.claude/skills/`
+## ไฟล์ของ skill อยู่ไหน
+`.claude/skills/game-creator/` (คู่มือหลัก `SKILL.md` · สูตรแนวเกม `genres/` · คู่มือย่อย `reference/`) · ไฟล์ปลั๊กอินอยู่ใน `.claude-plugin/`
+เริ่มเกมใหม่จาก Kit ในโฟลเดอร์อื่น: `node tools/new-game.mjs ../เกมใหม่ ชื่อเกม`
 
 ## ต่อยอด
 - ร้านค้า (Stripe โหมดทดสอบ): `extras/shop/README.md`
 - เอาเกมขึ้น Play Store / App Store: `docs/STORE_GUIDE.md`
+
+## เครดิต
+- เอฟเฟกต์พิกเซล (ถ้าใช้): [pixelfx](https://github.com/patch-gg/pixelfx) โดย Patch · MIT License
 
 ---
 ZenityX · คลาส Vibe Coding for Game Creator

@@ -17,7 +17,7 @@
 | ไฟล์ | หน้าที่ |
 |---|---|
 | `GAME_BRIEF.md` | ไอเดียเกม 1 หน้า — อ่านก่อนแก้เกมทุกครั้ง |
-| `public/config.js` | ตัวเลขทุกตัว · ภาพ (`ART`) · ตารางคะแนน (`ONLINE`) |
+| `public/config.js` | ตัวเลขทุกตัว · ภาพ (`ART`) · เอฟเฟกต์พิกเซล (`FX` จาก pixelfx) · ตารางคะแนน (`ONLINE`) |
 | `public/game.js` | โครงเกม + ส่วน `★ เปลี่ยนตรงนี้` |
 | `public/juice.js` | ความมันส์สำเร็จรูป + เสียง 8-bit — ห้ามลบ |
 | `public/online.js` · `public/top10.html` · `supabase/leaderboard.sql` | ตารางคะแนน + กรรมการกลาง |

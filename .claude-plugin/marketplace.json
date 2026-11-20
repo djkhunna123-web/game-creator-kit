@@ -1,0 +1,16 @@
+{
+  "name": "zenityx",
+  "description": "เครื่องมือจากคลาส ZenityX Vibe Coding for Game Creator",
+  "owner": {
+    "name": "ZenityX"
+  },
+  "plugins": [
+    {
+      "name": "game-creator",
+      "source": "./",
+      "description": "สร้างเกมมือถือที่เล่นสนุกจริงด้วย AI — Golden Workflow 6 ขั้น · สูตร 6 แนวเกม · ความมันส์สำเร็จรูป · ตารางคะแนน · ขึ้นเว็บ + QR · เอฟเฟกต์พิกเซล",
+      "category": "gamedev",
+      "tags": ["game", "phaser", "mobile", "thai"]
+    }
+  ]
+}
