@@ -1,0 +1,18 @@
+{
+  "name": "my-game",
+  "private": true,
+  "type": "module",
+  "description": "เกมมือถือจาก ZenityX Game Creator Kit — Phaser 3 + Cloudflare",
+  "scripts": {
+    "dev": "cf dev",
+    "build": "cf build",
+    "deploy": "cf deploy",
+    "ship": "node tools/ship.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "beta",
+    "cf": "^1.0.0-beta.31",
+    "qrcode": "^1.5.4",
+    "vite": "^8.3.0"
+  }
+}

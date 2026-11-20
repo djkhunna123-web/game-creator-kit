@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0820">
+  <title>Top 10</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai+Looped:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #0b0820; --card: #1a1440; --line: #2c2466; --gold: #ffe082; --pink: #ff4081; --cyan: #80deea; --muted: #a9acd6; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: radial-gradient(ellipse at 50% -10%, #2a1d6b 0%, var(--bg) 60%) fixed, var(--bg); color: #fff;
+      font-family: 'IBM Plex Sans Thai Looped', Tahoma, sans-serif; font-weight: 700; }
+    .wrap { display: grid; grid-template-columns: 1fr auto; gap: clamp(16px, 3vw, 48px); align-items: start;
+      max-width: 1500px; margin: 0 auto; padding: clamp(16px, 3vw, 44px); }
+    header { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    h1 { margin: 0; font-size: clamp(28px, 4.4vw, 64px); line-height: 1.15; color: var(--gold); letter-spacing: .5px; }
+    .live { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px;
+      background: rgba(255,64,129,.15); color: var(--pink); font-size: clamp(14px, 1.4vw, 22px); }
+    .live i { width: 12px; height: 12px; border-radius: 50%; background: var(--pink); animation: pulse 1.4s infinite; }
+    .live.off { background: rgba(169,172,214,.12); color: var(--muted); } .live.off i { background: var(--muted); animation: none; }
+    @keyframes pulse { 50% { opacity: .25; } }
+    ol { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(6px, .8vw, 12px); }
+    li { display: grid; grid-template-columns: clamp(44px, 5vw, 84px) 1fr auto; align-items: center; gap: clamp(10px, 1.4vw, 22px);
+      padding: clamp(8px, 1vw, 14px) clamp(14px, 1.6vw, 26px); border-radius: 16px; background: var(--card); border: 2px solid var(--line);
+      font-size: clamp(20px, 2.6vw, 42px); line-height: 1.25; }
+    li .rank { color: var(--muted); text-align: center; }
+    li .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    li .score { color: var(--gold); font-variant-numeric: tabular-nums; }
+    li:nth-child(1) { border-color: var(--gold); background: linear-gradient(90deg, rgba(255,224,130,.22), var(--card) 70%); }
+    li:nth-child(1) .rank, li:nth-child(1) .name { color: var(--gold); }
+    li:nth-child(2) .rank { color: #e0e0e0; } li:nth-child(3) .rank { color: #ffb74d; }
+    li.new { animation: flash 2.4s ease-out; }
+    @keyframes flash { 0% { transform: scale(1.04); border-color: var(--pink); box-shadow: 0 0 0 6px rgba(255,64,129,.45); } 100% { transform: none; } }
+    .empty { padding: 40px 20px; border-radius: 16px; border: 2px dashed var(--line); color: var(--muted); text-align: center;
+      font-size: clamp(20px, 2.4vw, 36px); }
+    aside { text-align: center; width: clamp(180px, 20vw, 300px); }
+    #qr { background: #fff; border-radius: 16px; padding: 10px; } #qr img, #qr canvas { width: 100% !important; height: auto !important; display: block; }
+    aside p { margin: 12px 0 0; font-size: clamp(18px, 1.8vw, 28px); line-height: 1.35; }
+    aside small { display: block; margin-top: 6px; color: var(--muted); font-size: clamp(14px, 1.2vw, 18px); font-weight: 500; word-break: break-all; }
+    @media (max-width: 700px) { .wrap { grid-template-columns: 1fr; } aside { width: 100%; max-width: 240px; margin: 0 auto; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 id="title">★ TOP 10</h1>
+      <span class="live off" id="live"><i></i><span id="liveText">กำลังต่อ…</span></span>
+    </header>
+    <main><ol id="list"></ol><div class="empty" id="empty" hidden>ยังไม่มีคะแนน · สแกน QR แล้วเล่นคนแรกเลย!</div></main>
+    <aside>
+      <div id="qr" role="img" aria-label="QR เข้าเล่นเกม"></div>
+      <p>สแกนเล่นเลย<br>30 วินาที</p>
+      <small id="url"></small>
+    </aside>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+  <script>
+    // หน้า Top 10 สำหรับจอโปรเจกเตอร์ · อ่านตาราง game_scores (อ่านได้อย่างเดียว) + ฟังคะแนนใหม่แบบสด (Supabase Realtime)
+    const list = document.getElementById('list'), empty = document.getElementById('empty');
+    const live = document.getElementById('live'), liveText = document.getElementById('liveText');
+    document.getElementById('url').textContent = location.host;
+    new QRCode(document.getElementById('qr'), { text: location.origin + '/', width: 512, height: 512, correctLevel: QRCode.CorrectLevel.M }); // QR ชี้หน้าเกม
+    document.getElementById('title').textContent = '★ ' + (CONFIG.TITLE || 'เกมของฉัน') + ' · TOP 10';
+    document.title = (CONFIG.TITLE || 'เกม') + ' · Top 10';
+    if (!ONLINE.URL) { document.getElementById('empty').hidden = false; document.getElementById('empty').textContent = 'ยังไม่ได้ต่อ Supabase · ใส่ URL/KEY ใน config.js ก่อน'; throw new Error('offline'); }
+    const db = supabase.createClient(ONLINE.URL, ONLINE.KEY);
+    let shownIds = new Set();
+
+    async function load(newId) {
+      const { data, error } = await db.from('game_scores').select('id,name,score').eq('game', ONLINE.GAME_ID)
+        .order('score', { ascending: false }).order('created_at').limit(10);
+      if (error) { liveText.textContent = 'โหลดไม่ได้'; return; }
+      list.replaceChildren(...data.map((r, i) => {
+        const li = document.createElement('li');
+        if (r.id === newId || (shownIds.size && !shownIds.has(r.id))) li.className = 'new';
+        for (const [cls, txt] of [['rank', i + 1], ['name', r.name], ['score', r.score + ' ★']]) {
+          const s = document.createElement('span'); s.className = cls; s.textContent = txt; li.append(s);
+        }
+        return li;
+      }));
+      shownIds = new Set(data.map((r) => r.id));
+      empty.hidden = data.length > 0;
+    }
+
+    db.channel('top10-' + ONLINE.GAME_ID)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_scores', filter: 'game=eq.' + ONLINE.GAME_ID }, (p) => load(p.new.id))
+      .subscribe((status) => {
+        const ok = status === 'SUBSCRIBED';
+        live.classList.toggle('off', !ok);
+        liveText.textContent = ok ? 'สด' : 'กำลังต่อ…';
+      });
+
+    load();
+    setInterval(load, 15000); // สำรอง: ถ้าสัญญาณสดหลุด ยังอัปเดตทุก 15 วินาที
+  </script>
+</body>
+</html>
