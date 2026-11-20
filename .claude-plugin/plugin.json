@@ -6,6 +6,19 @@
   "author": {
     "name": "ZenityX"
   },
-  "keywords": ["game", "phaser", "mobile", "gamedev", "thai", "zenityx", "vibe-coding"],
-  "skills": ["./.claude/skills/"]
+  "keywords": [
+    "game",
+    "phaser",
+    "mobile",
+    "gamedev",
+    "thai",
+    "zenityx",
+    "vibe-coding"
+  ],
+  "skills": [
+    "./.claude/skills/"
+  ],
+  "icon": "./public/icons/icon-512.png",
+  "homepage": "https://github.com/djkhunna123-web/game-creator-kit",
+  "repository": "https://github.com/djkhunna123-web/game-creator-kit"
 }
