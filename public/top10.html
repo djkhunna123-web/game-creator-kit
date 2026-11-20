@@ -53,7 +53,7 @@
     <main><ol id="list"></ol><div class="empty" id="empty" hidden>ยังไม่มีคะแนน · สแกน QR แล้วเล่นคนแรกเลย!</div></main>
     <aside>
       <div id="qr" role="img" aria-label="QR เข้าเล่นเกม"></div>
-      <p>สแกนเล่นเลย<br>30 วินาที</p>
+      <p>สแกนเล่นเลย<br><span id="len"></span></p>
       <small id="url"></small>
     </aside>
   </div>
@@ -69,6 +69,7 @@
     new QRCode(document.getElementById('qr'), { text: location.origin + '/', width: 512, height: 512, correctLevel: QRCode.CorrectLevel.M }); // QR ชี้หน้าเกม
     document.getElementById('title').textContent = '★ ' + (CONFIG.TITLE || 'เกมของฉัน') + ' · TOP 10';
     document.title = (CONFIG.TITLE || 'เกม') + ' · Top 10';
+    document.getElementById('len').textContent = CONFIG.GAME_TIME ? `รอบละ ${CONFIG.GAME_TIME} วินาที` : '';
     if (!ONLINE.URL) { document.getElementById('empty').hidden = false; document.getElementById('empty').textContent = 'ยังไม่ได้ต่อ Supabase · ใส่ URL/KEY ใน config.js ก่อน'; throw new Error('offline'); }
     const db = supabase.createClient(ONLINE.URL, ONLINE.KEY);
     let shownIds = new Set();

@@ -162,13 +162,16 @@ class Game extends Phaser.Scene {
 
   showReady() {
     this.panel((c) => {
-      let y = 200;
+      let y = 170;
       for (const [t, size, color] of [
         [C.TITLE, 36, '#ffe082'],
         [C.SUBTITLE, 18, '#ffffff'],
         [`ทำติดกัน = คอมโบ ×${C.MAX_MULT} · ${C.FEVER_TIME} วิท้าย FEVER ×${C.FEVER_MULT}`, 15, '#ff80ab'],
         [this.best ? `คะแนนสูงสุด ${this.best.toLocaleString()}` : `เล่น ${C.GAME_TIME} วินาที · ${C.LIVES} ชีวิต`, 16, '#c5cae9']
-      ]) { c.add(this.add.text(W / 2, y, t, text(size, color, { align: 'center', wordWrap: { width: W - 40 } })).setOrigin(0.5)); y += size * 1.7; }
+      ]) { // วางทีละบรรทัดตามความสูงจริง (ข้อความยาวขึ้น 2 บรรทัดก็ไม่ทับกัน)
+        const tx = this.add.text(W / 2, y, t, text(size, color, { align: 'center', wordWrap: { width: W - 40 } })).setOrigin(0.5, 0);
+        c.add(tx); y += tx.height + size * 0.55;
+      }
       return y;
     }, 'แตะเพื่อเริ่ม', () => this.start());
     this.updateHud();
