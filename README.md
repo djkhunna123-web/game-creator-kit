@@ -12,7 +12,7 @@
 /plugin install game-creator@zenityx
 ```
 จากนั้นเปิด **โฟลเดอร์เปล่า** แล้วพิมพ์คำสั่งเกม (ด้านล่าง) — skill จะวางแม่แบบเกมให้เอง
-อัปเดตเป็นเวอร์ชันใหม่: `/plugin marketplace update zenityx`
+อัปเดตเป็นเวอร์ชันใหม่: `/plugin marketplace update zenityx` แล้ว `/plugin update game-creator@zenityx` (แล้วเปิด Claude Code ใหม่)
 
 ### แบบ B · ดาวน์โหลดทั้ง Kit (ใช้กับ Codex ได้ด้วย)
 ```bash
