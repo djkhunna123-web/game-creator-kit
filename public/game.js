@@ -33,7 +33,7 @@ class Game extends Phaser.Scene {
     }
   }
 
-  // เล่นเอฟเฟกต์ที่ x,y (หน่วยเกม 360×640) · { scale: 1, loop: false, depth: 6, flip: false }
+  // เล่นเอฟเฟกต์ที่ x,y (หน่วยเกม W×H) · { scale: 1, loop: false, depth: 6, flip: false }
   // x,y = จุดยึดของเอฟเฟกต์ (pivot ที่ pixelfx กำหนด เช่น พื้นใต้กองไฟ) · scale ใช้เลขเต็ม 1/2/3 พิกเซลจะคมสุด
   // เล่นครั้งเดียวแล้วหายเอง · loop: true = คืนตัวสไปรต์ไว้ให้ลบเอง (.destroy())
   playFx(k, x, y, o = {}) {
@@ -194,16 +194,20 @@ class Game extends Phaser.Scene {
 
   showReady() {
     this.panel((c) => {
-      let y = 170;
-      for (const [t, size, color] of [
+      const lines = [
         [C.TITLE, 36, '#ffe082'],
         [C.SUBTITLE, 18, '#ffffff'],
         [`ทำติดกัน = คอมโบ ×${C.MAX_MULT} · ${C.FEVER_TIME} วิท้าย FEVER ×${C.FEVER_MULT}`, 15, '#ff80ab'],
         [this.best ? `คะแนนสูงสุด ${this.best.toLocaleString()}` : `เล่น ${C.GAME_TIME} วินาที · ${C.LIVES} ชีวิต`, 16, '#c5cae9']
-      ]) { // วางทีละบรรทัดตามความสูงจริง (ข้อความยาวขึ้น 2 บรรทัดก็ไม่ทับกัน)
-        const tx = this.add.text(W / 2, y, t, text(size, color, { align: 'center', wordWrap: { width: W - 40 } })).setOrigin(0.5, 0);
-        c.add(tx); y += tx.height + size * 0.55;
-      }
+      ].map(([t, size, color]) => {
+        const tx = this.add.text(W / 2, 0, t, text(size, color, { align: 'center', wordWrap: { width: Math.min(W - 40, 520) } })).setOrigin(0.5, 0);
+        c.add(tx); return [tx, size];
+      });
+      // วางทีละบรรทัดตามความสูงจริง (ข้อความยาวขึ้น 2 บรรทัดก็ไม่ทับกัน)
+      // แนวตั้ง: เริ่มที่ y 170 · แนวนอน: จัดทั้งกล่อง (ข้อความ + ปุ่ม ~75) ให้อยู่กลางจอ
+      const total = lines.reduce((s, [tx, size]) => s + tx.height + size * 0.55, 0);
+      let y = LANDSCAPE ? Math.max(16, (H - total - 75) / 2) : 170;
+      for (const [tx, size] of lines) { tx.y = y; y += tx.height + size * 0.55; }
       return y;
     }, 'แตะเพื่อเริ่ม', () => this.start());
     this.updateHud();
@@ -249,20 +253,24 @@ class Game extends Phaser.Scene {
   showOver(isBest) {
     const { g, color } = Juice.grade(this.score, C.GRADES);
     let rankText;
+    // ตำแหน่ง: แนวตั้ง = เรียงลงมาเป็นแถว · แนวนอน = เกรดฝั่งซ้าย / คะแนน+สถิติฝั่งขวา / ปุ่มกลางล่าง
+    const P = LANDSCAPE
+      ? { title: [W / 2, 64], grade: [W * 0.3, 162], score: [W * 0.66, 124], stats: [W * 0.66, 168], best: [W * 0.66, 195], rank: [W * 0.66, 222], end: 250 }
+      : { title: [W / 2, 150], grade: [W / 2, 238], score: [W / 2, 320], stats: [W / 2, 362], best: [W / 2, 390], rank: [W / 2, 420], end: 432 };
     this.panel((c) => {
-      c.add(this.add.text(W / 2, 150, this.lives <= 0 ? 'เกมโอเวอร์!' : 'หมดเวลา!', text(28, '#ff8a80')).setOrigin(0.5));
-      const gradeText = this.add.text(W / 2, 238, g, text(96, color, { stroke: '#1a1440', strokeThickness: 8 })).setOrigin(0.5).setScale(0);
+      c.add(this.add.text(...P.title, this.lives <= 0 ? 'เกมโอเวอร์!' : 'หมดเวลา!', text(28, '#ff8a80')).setOrigin(0.5));
+      const gradeText = this.add.text(...P.grade, g, text(96, color, { stroke: '#1a1440', strokeThickness: 8 })).setOrigin(0.5).setScale(0);
       c.add(gradeText);
       this.tweens.add({ targets: gradeText, scale: 1, duration: 420, delay: 700, ease: 'Back.out',
-        onStart: () => { (g === 'S' || g === 'A') ? Sfx.combo() : Sfx.tick(); if (g === 'S') Juice.burst(W / 2, 238, 0xffd54f, 24, 260); } });
-      const scoreText = this.add.text(W / 2, 320, '0', text(44, '#ffe082')).setOrigin(0.5);
+        onStart: () => { (g === 'S' || g === 'A') ? Sfx.combo() : Sfx.tick(); if (g === 'S') Juice.burst(...P.grade, 0xffd54f, 24, 260); } });
+      const scoreText = this.add.text(...P.score, '0', text(44, '#ffe082')).setOrigin(0.5);
       c.add(scoreText);
       Juice.countUp(scoreText, 0, this.score, 700, (v) => v.toLocaleString());
-      c.add(this.add.text(W / 2, 362, `ทำได้ ${this.stats.hits} ครั้ง · คอมโบสูงสุด ${this.stats.maxCombo}`, text(15, '#c5cae9')).setOrigin(0.5));
-      c.add(this.add.text(W / 2, 390, isBest ? 'สถิติใหม่ของคุณ!' : `คะแนนสูงสุด ${this.best.toLocaleString()}`, text(17, isBest ? '#b9f6ca' : '#c5cae9')).setOrigin(0.5));
-      rankText = this.add.text(W / 2, 420, '', text(17, '#80deea')).setOrigin(0.5);
+      c.add(this.add.text(...P.stats, `ทำได้ ${this.stats.hits} ครั้ง · คอมโบสูงสุด ${this.stats.maxCombo}`, text(15, '#c5cae9')).setOrigin(0.5));
+      c.add(this.add.text(...P.best, isBest ? 'สถิติใหม่ของคุณ!' : `คะแนนสูงสุด ${this.best.toLocaleString()}`, text(17, isBest ? '#b9f6ca' : '#c5cae9')).setOrigin(0.5));
+      rankText = this.add.text(...P.rank, '', text(17, '#80deea')).setOrigin(0.5);
       c.add(rankText);
-      return 432;
+      return P.end;
     }, 'เล่นอีกครั้ง', () => this.start());
 
     // ออนไลน์ + ได้คะแนน → ถามชื่อแล้วส่งให้กรรมการกลาง
@@ -307,6 +315,7 @@ class Game extends Phaser.Scene {
 }
 
 function boot() {
+  // ขนาดแคนวาส = จอเกม W×H (แนวตั้ง/แนวนอนตาม CONFIG.ORIENTATION) × ความละเอียด Z
   window.__game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',
@@ -317,5 +326,5 @@ function boot() {
     scene: [Game]
   });
 }
-// รอฟอนต์ไทยโหลดก่อน ตัวหนังสือจะได้ไม่กระพริบเปลี่ยนฟอนต์
-(document.fonts ? Promise.race([document.fonts.load(`700 20px ${FONT}`), new Promise((r) => setTimeout(r, 2000))]) : Promise.resolve()).then(boot, boot);
+// รอฟอนต์ไทยโหลดก่อน ตัวหนังสือจะได้ไม่กระพริบเปลี่ยนฟอนต์ (ส่งตัวอย่างภาษาไทยไปด้วย = โหลดชุดอักษรไทย ไม่ใช่แค่อังกฤษ)
+(document.fonts ? Promise.race([document.fonts.load(`700 20px ${FONT}`, 'เกมไทย Game 123'), new Promise((r) => setTimeout(r, 2000))]) : Promise.resolve()).then(boot, boot);

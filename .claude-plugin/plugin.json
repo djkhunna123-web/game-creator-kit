@@ -1,7 +1,7 @@
 {
   "name": "game-creator",
   "displayName": "ZenityX Game Creator",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "ทีมทำเกมในเครื่องคุณ: สร้างเกมมือถือ 2D (Phaser 3) ที่เล่นสนุกจริง ตาม Golden Workflow 6 ขั้นของ ZenityX — สัมภาษณ์ไอเดีย → Game Brief → สร้าง → ใส่ความมันส์ → AI เล่นทดสอบ → ขึ้นเว็บ + QR · สูตร 6 แนวเกม · ตารางคะแนนออนไลน์ · เอฟเฟกต์พิกเซล pixelfx",
   "author": {
     "name": "ZenityX"

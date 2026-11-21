@@ -12,13 +12,20 @@
 //   new Juice.Combo({ window: 1.2, step: 5, max: 4 })  คอมโบ + ตัวคูณ
 //   Juice.grade(score, { S: 600, A: 400, B: 200 })     เกรด S/A/B/C
 //   Sfx.coin(n) · Sfx.hit() · Sfx.power() · Sfx.tick() · Sfx.go() · Sfx.win() · Sfx.over()
+//   แนวนอน (ORIENTATION: 'landscape'): หน้า "หมุนมือถือ" + หยุดเกมตอนจอตั้ง + Android ล็อกแนวนอนหลังแตะ — ทำให้เองท้ายไฟล์
 
-const W = 360, H = 640; // พิกัดในเกมใช้จอขนาด 360 × 640 เสมอ
+// ทิศจอตั้งใน config.js → ORIENTATION: 'portrait' (แนวตั้ง 360 × 640 · ค่าเริ่มต้น) หรือ 'landscape' (แนวนอน 640 × 360)
+const LANDSCAPE = (window.CONFIG && CONFIG.ORIENTATION) === 'landscape';
+const W = LANDSCAPE ? 640 : 360, H = LANDSCAPE ? 360 : 640; // พิกัดในเกม — วางของด้วย W, H เสมอ (ไม่ใช้ตัวเลขตายตัว)
 const FONT = "'IBM Plex Sans Thai Looped', Tahoma, sans-serif";
 
-// เรนเดอร์ละเอียดตามจอจริง (ตัวหนังสือคม ไม่แตกเป็นพิกเซล): แคนวาส = 360×640 × Z แล้วซูมกล้อง Z เท่า
-const Z = Math.max(1, Math.min(3, Math.ceil(Math.min(innerWidth / W, innerHeight / H) * (devicePixelRatio || 1) - 0.15)));
-const text = (size, color = '#ffffff', extra = {}) => ({ fontFamily: FONT, fontSize: size + 'px', color, fontStyle: '700', resolution: Z, ...extra });
+// เรนเดอร์ละเอียดตามจอจริง (ตัวหนังสือคม ไม่แตกเป็นพิกเซล): แคนวาส = W×H × Z แล้วซูมกล้อง Z เท่า
+// แนวนอน: เปิดเกมตอนถือมือถือแนวตั้ง ก็คิดขนาดแบบหมุนแล้ว (หมุนจอปุ๊บ ตัวหนังสือคมทันที)
+const VW = LANDSCAPE ? Math.max(innerWidth, innerHeight) : innerWidth;
+const VH = LANDSCAPE ? Math.min(innerWidth, innerHeight) : innerHeight;
+const Z = Math.max(1, Math.min(3, Math.ceil(Math.min(VW / W, VH / H) * (devicePixelRatio || 1) - 0.15)));
+// testString = ตัวอย่างที่ใช้วัดความสูงตัวหนังสือ: ใส่สระ/วรรณยุกต์ไทยซ้อนกัน (ฟื้ ปู่ ฐ ญ) ไม่งั้น "เพื่อ" "ที่นี่" โดนตัดวรรณยุกต์ด้านบนหาย
+const text = (size, color = '#ffffff', extra = {}) => ({ fontFamily: FONT, fontSize: size + 'px', color, fontStyle: '700', resolution: Z, testString: '|MÉqgyฟื้ปู่ฐญ', ...extra });
 
 // ---------- เสียง 8-bit สร้างด้วยโค้ด (Web Audio) — ฟรี ไม่ใช้ไฟล์ เล่นได้ทุกเครื่อง ----------
 const Sfx = {
@@ -177,3 +184,56 @@ const Juice = {
     expired(nowMs) { return this.count > 0 && nowMs - this.last > this.window * 1000; }
   }
 };
+
+// ---------- แนวนอน: หน้า "หมุนมือถือ" + ล็อกจอ (ทำงานเองเมื่อ ORIENTATION: 'landscape') ----------
+// • ถือมือถือ/แท็บเล็ตแนวตั้ง → ขึ้นหน้า "หมุนมือถือเป็นแนวนอน" ทับเกม + หยุดเกมไว้ หมุนกลับแล้วเล่นต่อ
+//   (คอม/โน้ตบุ๊กหน้าต่างแคบ ไม่ต้องหมุน → แสดงเกมย่อพอดีหน้าต่างแทน)
+// • Android: แตะครั้งแรก → เต็มจอ + ล็อกแนวนอน (iPhone ล็อกไม่ได้ ใช้หน้าบอกให้หมุนแทน)
+// • ติดตั้งเป็นแอป: ตั้ง "orientation": "landscape" ใน manifest.webmanifest ด้วย
+const Orient = {
+  portrait: () => matchMedia('(orientation: portrait) and (pointer: coarse)').matches,
+  touch: () => matchMedia('(pointer: coarse)').matches,
+  setup() {
+    if (!LANDSCAPE || this.ready) return;
+    this.ready = true;
+    const css = document.createElement('style');
+    css.textContent = `
+      #jx-rotate { position: fixed; inset: 0; z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center;
+        gap: 14px; padding: 24px; background: #05040f; color: #fff; text-align: center; font-family: ${FONT}; }
+      @media (orientation: portrait) and (pointer: coarse) { #jx-rotate { display: flex; } }
+      #jx-rotate .ph { width: 56px; height: 96px; border: 5px solid #ffe082; border-radius: 12px; box-sizing: border-box;
+        position: relative; animation: jx-turn 2.2s ease-in-out infinite; }
+      #jx-rotate .ph::after { content: ''; position: absolute; left: 50%; bottom: 6px; width: 10px; height: 10px; margin-left: -5px;
+        border-radius: 50%; background: #ffe082; }
+      @keyframes jx-turn { 0%, 25% { transform: rotate(0); } 55%, 100% { transform: rotate(-90deg); } }
+      #jx-rotate b { font-size: 24px; line-height: 1.35; color: #ffe082; }
+      #jx-rotate p { margin: 0; font-size: 17px; line-height: 1.5; font-weight: 500; color: #c5cae9; }`;
+    document.head.appendChild(css);
+    const box = document.createElement('div');
+    box.id = 'jx-rotate';
+    box.innerHTML = '<div class="ph"></div><b>หมุนมือถือเป็นแนวนอน</b><p>เกมนี้เล่นแนวนอน 🔄</p>' +
+      (document.documentElement.requestFullscreen && this.touch() ? '<p>หรือแตะตรงนี้เพื่อเล่นเต็มจอ</p>' : '');
+    document.body.appendChild(box);
+
+    // หยุดเกมตอนจอตั้ง · เล่นต่อตอนจอนอน (โหมด AI ทดสอบไม่หยุด)
+    const sync = () => {
+      const g = window.__game;
+      if (!g || /[?&]bot/.test(location.search)) return;
+      if (this.portrait() && !g.isPaused) { g.pause(); g.sound && g.sound.pauseAll(); }
+      else if (!this.portrait() && g.isPaused) { g.resume(); g.sound && g.sound.resumeAll(); }
+    };
+    matchMedia('(orientation: portrait) and (pointer: coarse)').addEventListener('change', sync);
+    this.sync = sync;
+
+    // Android: แตะครั้งแรก (ปล่อยนิ้ว) → เต็มจอ + ล็อกแนวนอน
+    const lock = () => {
+      const el = document.documentElement;
+      if (!this.touch() || !el.requestFullscreen || document.fullscreenElement) return;
+      el.requestFullscreen({ navigationUI: 'hide' })
+        .then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape'))
+        .catch(() => {});
+    };
+    ['pointerup', 'touchend'].forEach((e) => document.addEventListener(e, lock, { passive: true }));
+  }
+};
+if (document.body) Orient.setup(); else addEventListener('DOMContentLoaded', () => Orient.setup());

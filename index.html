@@ -38,6 +38,14 @@
     #sheetSend:disabled { opacity: .6; }
     #sheetSkip { background: transparent; color: #c5cae9; font-size: 17px !important; margin-top: 4px !important; }
     #sheetMsg { min-height: 1.4em; margin: 6px 0 0; font-size: 15px; font-weight: 500; color: #ff8a80; }
+    /* จอเตี้ย (เกมแนวนอน / คีย์บอร์ดขึ้น): ย่อหน้าใส่ชื่อให้พอดีจอ */
+    @media (max-height: 450px) {
+      #sheet { align-items: flex-start; padding-top: 10px; }
+      #sheetForm { padding: 12px 16px 10px; max-width: 360px; }
+      #sheetScore { font-size: 28px; margin: 0 0 6px; }
+      #sheetName { padding: 8px 12px; }
+      #sheetForm button { padding: 9px; margin-top: 8px; }
+    }
 
   </style>
 </head>

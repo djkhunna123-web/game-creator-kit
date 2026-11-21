@@ -16,7 +16,7 @@
 1. **ห่อเกมเว็บเป็นแอป** ด้วย Capacitor:
    ```
    ช่วยห่อเกมนี้เป็นแอปมือถือด้วย Capacitor (Android ก่อน)
-   ใช้ไฟล์ใน public/ + index.html · เปิดเต็มจอ แนวตั้ง · ไอคอนจาก public/icons
+   ใช้ไฟล์ใน public/ + index.html · เปิดเต็มจอ · ล็อกทิศจอตาม ORIENTATION ใน config.js (แนวตั้ง/แนวนอน) · ไอคอนจาก public/icons
    ```
 2. **Android**: เปิดใน Android Studio → ลองบนมือถือจริง → Build → Generate Signed Bundle (.aab) → อัปโหลดใน Play Console
 3. **iPhone**: เปิดใน Xcode บน Mac → ใส่ Apple Developer Team → ลองบนเครื่อง → Archive → อัปโหลด App Store Connect
